@@ -60,11 +60,12 @@ async def on_ready():
 @client.event
 async def on_message(message):
     author = message.author # sets the variable "author" to the id of the user who sent "message"
+    channelid = message.channel.id
     strmessage = message.content # copys message contents to the strmessage variable (of string type)
 
     if (message.author.bot):
         return  
-    elif (nhentai_code_check(strmessage) == True):
+    elif ((nhentai_code_check(strmessage) == True) and channelid == 1083235734481276968):
         await message.channel.send("https://www.nhentai.net/g/" + strmessage)
     elif (message.author.id == 536340598375055361) and (search_found_Nword(strmessage) == 1): #If praneith says the n word
         await message.channel.send("of course praneith is being racist again. bro really did just say '" + strmessage + "' This is why you will never get a higher GPA than Soham and why your dad is in Italy.")
