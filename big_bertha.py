@@ -1,7 +1,7 @@
 import discord
 import string
 
-#INITILIZATION
+#INITILIZATION -------------------------
 
 token =  "MTEzMjA4MDUwNTY3MjY5OTk2NQ.GWYiiE.MuSF322Heb_6J4xw6gZf7f-xecqRN688U20gYI" #os.getenv("DISCORD_TOKEN")
 my_guild = "361552282287996928"    #os.getenv("DISCORD_GUILD")
@@ -9,9 +9,9 @@ my_guild = "361552282287996928"    #os.getenv("DISCORD_GUILD")
 intents = discord.Intents.all()
 client = discord.Client(intents=intents)
 
-#INITILIZATION
+#INITILIZATION -------------------------
 
-#FUNCTIONS
+#FUNCTIONS -------------------------
 
 def search_found_Nword(sent_message):
     sent_message = sent_message.lower()
@@ -22,7 +22,6 @@ def search_found_Nword(sent_message):
     else:
         return
 
-
 def search_found_phrases(sent_message):
     sent_message = sent_message.lower()
     if sent_message.find("kys") != -1:
@@ -32,9 +31,20 @@ def search_found_phrases(sent_message):
     else:
         return
 
-#FUNCTIONS
+def nhentai_code_check (sent_message):
+    seperated_message = list(sent_message)
 
-#EVENTS
+    if len(seperated_message) == 6:
+        for i in seperated_message:
+            if (48 <= ord(i) <= 57):
+                continue
+            else:
+                return False
+        return True
+
+#FUNCTIONS -------------------------
+
+#EVENTS -------------------------
 
 @client.event
 async def on_ready():
@@ -54,6 +64,8 @@ async def on_message(message):
 
     if (message.author.bot):
         return  
+    elif (nhentai_code_check(strmessage) == True):
+        await message.channel.send("https://www.nhentai.net/g/" + strmessage)
     elif (message.author.id == 536340598375055361) and (search_found_Nword(strmessage) == 1): #If praneith says the n word
         await message.channel.send("of course praneith is being racist again. bro really did just say '" + strmessage + "' This is why you will never get a higher GPA than Soham and why your dad is in Italy.")
         await message.pin()
@@ -72,6 +84,6 @@ async def on_message(message):
 
         #NEXT STEPS: OCR?? https://builtin.com/data-science/python-ocr
 
-#EVENTS
+#EVENTS -------------------------
 
 client.run(token)
