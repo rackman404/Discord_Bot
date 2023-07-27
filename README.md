@@ -1,5 +1,14 @@
 # Discord_Bot
  Bot with various utilities
 
-Required packages:
-	Discord.py
+Features:
+	OCR support
+	Phrase recognition
+
+Required packages (Dependancies):
+	OCR
+		Pillow
+		PyTesseract
+		NumPy
+	Main
+		Discord.py

@@ -43,6 +43,11 @@ def search_found_phrases(sent_message):
     else:
         return
 
+def search_found_command_phrase(sent_message):
+    sent_message = sent_message.lower()
+    if sent_message.find("translate for me majed") != -1:
+        return 10
+
 def nhentai_code_check(sent_message):
     seperated_message = list(sent_message)
 
@@ -121,13 +126,15 @@ async def on_message(message):
     #if channelid == 1132913818318680094:
     if (1 == len(message.attachments)): #If theres 1 AND ONLY 1 Attachment to the message
         strattachments = message.attachments[0].url
-
         if search_found_phrases(strattachments) == 100: #If .png is found to be the file extension
             print (str(image_download_and_OCR_scanner(strattachments))) #TEMP AND SHOULD BE REMOVED AFTER TESTING
             scannedstring = str(image_download_and_OCR_scanner(strattachments))
-            
             scannedstring = scannedstring.strip() #TEMP AND SHOULD BE REMOVED AFTER TESTING
-            if (scannedstring == "HELLO"):
+
+            if search_found_command_phrase(strmessage) == 10:
+                await message.channel.send(scannedstring)
+
+            elif (scannedstring == "HELLO"):
                 await message.channel.send("HELLO JACKY")
 
     # EMBEDDED IMAGE CHECK ---
@@ -137,3 +144,9 @@ async def on_message(message):
 #EVENTS -------------------------
 
 client.run(token)
+
+
+
+
+
+
