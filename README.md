@@ -12,3 +12,11 @@ Required packages (Dependancies):
 		NumPy
 	Main
 		Discord.py
+	Time 
+		datetime
+		time
+
+
+
+Possible Features:
+	Auto ffmpeg
