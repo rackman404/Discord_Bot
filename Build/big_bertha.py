@@ -21,7 +21,7 @@ token =  "MTEzMjA4MDUwNTY3MjY5OTk2NQ.GWYiiE.MuSF322Heb_6J4xw6gZf7f-xecqRN688U20g
 my_guild = "361552282287996928"    #os.getenv("DISCORD_GUILD")
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix ="//", intents=intents)
+bot = commands.Bot(command_prefix ="$", intents=intents)
 
 
 utc = datetime.timezone.utc #timezone (note utc is 5 hours ahead of est)
@@ -109,7 +109,7 @@ async def timer():
 
 
 @bot.command ()
-async def playchinkmusic(ctx):
+async def p(ctx): #passes through message to command
     channel = ctx.author.voice.channel
     vc= await channel.connect()
     vc.play(discord.FFmpegPCMAudio(executable="Y:/Utilities/ffmpeg-6.0-essentials_build/bin/ffmpeg.exe", source="C:/Users/jacky/Music/phoenixlegends.mp3"))
@@ -142,8 +142,8 @@ async def on_message(message):
     strmessage = message.content # copys message contents to the strmessage variable (of string type)
     
     #EXPERIMENTAL BUILD (FOR TESTING, REMOVE ON LIVE VERSION)
-    if (channelid != 1132913818318680094):
-        return
+    #if (channelid != 1132913818318680094):
+    #    return
 
     if (message.author.bot):
         return  
@@ -200,6 +200,14 @@ async def on_message(message):
     await bot.process_commands(message)
 
 bot.run(token)
+
+
+
+
+
+
+
+
 
 
 
