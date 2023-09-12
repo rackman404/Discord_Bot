@@ -2,6 +2,8 @@ import discord
 from discord.ext import commands, tasks
 import string
 
+#import PyNaCl
+
 #PYTESSERACT
 from PIL import Image
 import pytesseract
@@ -19,14 +21,15 @@ token =  "MTEzMjA4MDUwNTY3MjY5OTk2NQ.GWYiiE.MuSF322Heb_6J4xw6gZf7f-xecqRN688U20g
 my_guild = "361552282287996928"    #os.getenv("DISCORD_GUILD")
 
 intents = discord.Intents.all()
-client = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix ="$", intents=intents)
+
 
 utc = datetime.timezone.utc #timezone (note utc is 5 hours ahead of est)
 
 
 set_times = [
     ##datetime.time(hour=7, tzinfo=utc), #NOTE THAT DATETIME.TIME IS AHEAD BY 4 HOURS (FORMAT IS HH:MM:SS)
-    datetime.time(4, 0, 2), #midnight
+    datetime.time(4, 0, 1), #midnight
     #datetime.time(20, 22, 50) #testtime
 ]
 
@@ -100,40 +103,51 @@ async def timer():
 
 #TASKS ---------
 
+
+#COMMANDS -----------
+
+
+
+@bot.command ()
+async def p(ctx): #passes through message to command
+    channel = ctx.author.voice.channel
+    vc= await channel.connect()
+    vc.play(discord.FFmpegPCMAudio(executable="Y:/Utilities/ffmpeg-6.0-essentials_build/bin/ffmpeg.exe", source="C:/Users/jacky/Music/phoenixlegends.mp3"))
+
+
 #EVENTS -------------------------
 
-@client.event
+@bot.event
 async def on_ready():
 
     timer.start()
 
 
 #INITIALIZATION INFO ---
-    for guild in client.guilds:
+    for guild in bot.guilds:
         if guild.name == my_guild:
             break
 
     print(
-        f"{client.user} is connected to the following guild:\n"
+        f"{bot.user} is connected to the following guild:\n"
         f"{guild.name}(id: {guild.id})"
     )
 #INITIALIZATION INFO ---
 
 
-
-
-@client.event
+@bot.event
 async def on_message(message):
     author = message.author # sets the variable "author" to the id of the user who sent "message"
     channelid = message.channel.id
     strmessage = message.content # copys message contents to the strmessage variable (of string type)
     
     #EXPERIMENTAL BUILD (FOR TESTING, REMOVE ON LIVE VERSION)
-    if (channelid != 1132913818318680094):
-        return
+    #if (channelid != 1132913818318680094):
+    #    return
 
     if (message.author.bot):
         return  
+
 
     # STRING CHECK ---
 
@@ -182,9 +196,18 @@ async def on_message(message):
 
 #EVENTS -------------------------
 
+    #PASS TO COMMANDS
+    await bot.process_commands(message)
+
+bot.run(token)
 
 
-client.run(token)
+
+
+
+
+
+
 
 
 
