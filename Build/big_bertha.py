@@ -9,13 +9,18 @@ import numpy as np
 #IMAGE DOWNLOAD FROM URL and FILE MANAGEMENT
 import requests
 import os
+import os.path
 #TIME TRACKING
 import datetime
 import time
 import asyncio
 #EXTERNAL API
 import wikipedia
+#OTHER
+import math
 
+#Personal Classes
+import music_module
 
 #INITILIZATION -------------------------
 
@@ -29,11 +34,7 @@ bot = commands.Bot(command_prefix ="$", intents=intents, activity=discord.Custom
 set_times = [
     ##datetime.time(hour=7, tzinfo=utc), #NOTE THAT DATETIME.TIME IS AHEAD BY 4 HOURS (FORMAT IS HH:MM:SS)
     datetime.time(4, 0, 1), #midnight
-    #datetime.time(20, 22, 50) #testtime
 ]
-
-#GLOBAL VARIABLES
-pauseCheck = False #(PlayMusic Command)
 
 
 
@@ -92,6 +93,61 @@ def image_download_and_OCR_scanner (embeds):
     
     return scannedString
 
+def GetWolfram(Query):
+    Query = Query.strip()
+    Query = Query.replace("+", " plus ")
+    Query = Query.replace("-", " minus ")
+
+    simpleAppid = "K6UG4H-6YPEX7VYRQ"
+
+    xml = requests.get("http://api.wolframalpha.com/v2/query?appid=" + simpleAppid + "&input=" + r'"' + Query + r'"' "&podstate=Step-by-step solution")
+
+    print ("http://api.wolframalpha.com/v2/query?appid=" + simpleAppid + "&input=" + r'"' + Query + r'"' +"&podstate=Step-by-step solution") #debug
+
+    xmlStr = str(xml.content) #string conversion of xml 
+
+    xmlStr = xmlStr.replace("amp;", "") # replaces amp link
+
+
+    imageLocationStart = xmlStr.find("img src=", xmlStr.find("Possible intermediate steps")) # finds start 
+    imageLocationEnd = xmlStr.find("'" + r'\n' , imageLocationStart) # and end of image link
+
+    #print (str(imageLocationStart) + "\n" + str(imageLocationEnd))
+
+    if (imageLocationStart == -1 or imageLocationEnd == -1): #error code for when image doesnt exist
+        return -1
+    else:
+        imageURL = xmlStr[imageLocationStart+9:imageLocationEnd]
+        return imageURL #sends image URL out
+
+    #NEXT STEPS, GET ARRAY OF IMAGES
+
+def fileCounter():
+    if (os.path.isfile("config/data.txt") == False):
+        open("config/data.txt", 'x') 
+
+    with open('config/data.txt', "r+") as f:
+        if (os.path.getsize('config/data.txt') == 0):
+            f.write("1")
+
+        f.seek(0)
+        count = f.read()
+
+        f.seek(0)
+
+        num = f.readlines()
+
+        f.seek(0)
+        f.write(str(int(num[0]) - 1))
+        f.close()
+
+    return count
+    
+
+
+
+
+
 #FUNCTIONS -------------------------
 
 
@@ -112,7 +168,7 @@ embedVarHelp.add_field(name = "$Whats", value = "Searches the following string m
 embedVarHelp.add_field(name = "$Disconnect", value = "Disconnects Bot from VC if it is already connected to VC", inline = True)
 embedVarHelp.add_field(name = "$PlayMusic", value = "Primitive music player (Now with pause and play functionality!)", inline = True)
 embedVarHelp.add_field(name = "$OCR", value = "Reads a image attachment on same message that called the command", inline = True)
-embedVarHelp.add_field(name = "$TestEmbed", value = "test embed with page functions", inline = True)
+embedVarHelp.add_field(name = "$Wolfram", value = "Returns a step by step solution of a query (if it returns no result then reword your question/equation)", inline = True)
 
 #Static Embeds ----
 
@@ -122,8 +178,13 @@ embedVarHelp.add_field(name = "$TestEmbed", value = "test embed with page functi
 
 @tasks.loop(time=set_times)
 async def timer():
+
+    
+        
+
+
     channel = bot.get_channel(1056035329888493649)
-    await channel.send("the time is now " + discord.utils.format_dt(discord.utils.utcnow(), style = "D"))
+    await channel.send("the time is now " + discord.utils.format_dt(discord.utils.utcnow(), style = "D") + " There are " + str(fileCounter()) + " Days until reading week!!!")
     
     """
     diick = await channel.send("✈️                                                                                     🏙️")
@@ -143,25 +204,13 @@ async def timer():
         await diick.edit(content = "😵😵😵😵😵😵")
         await asyncio.sleep(2)
 
-    for x in range(2000):
-        await diick.edit(content = "✈️                                                                                    🏙️")
-        await asyncio.sleep(5)
-        await diick.edit(content = "✈️                                                        🏙️")
-        await asyncio.sleep(6)
-        await diick.edit(content = "✈️                            🏙️")
-        await asyncio.sleep(6)
-        await diick.edit(content = "✈️      🏙️")
-        await asyncio.sleep(6)
-        await diick.edit(content = "💥")
-        await asyncio.sleep(6)
-        await diick.edit(content = "😵😵😵😵😵😵")
-        await asyncio.sleep(6)
     """
-
 
 #TASKS ---------
 
 #Classes -----
+
+"""
 
 class Buttons_Music_Interaction(discord.ui.View):
         
@@ -169,11 +218,14 @@ class Buttons_Music_Interaction(discord.ui.View):
             self.ctx = ctx #instance variable
             self.pauseCheck = False
 
-            super().__init__(timeout = None)
-        @discord.ui.button (label = "Disconnect", style = discord.ButtonStyle.red, custom_id = "disc1")
+            if self.ctx.voice_client != None:
+                self.vc = self.ctx.voice_client
+
+        super().__init__(timeout = None)
+        @discord.ui.button (label = "Disconnect", style = discord.ButtonStyle.red)
 
         #If button is pressed, disconnects the bot
-        async def disconnectInteraction(self, interaction: discord.Interaction, button: discord.ui.Button):    
+        async def disconnectInteraction(self, interaction: discord.Interaction, button: discord.ui.Button): #Disconnect Function
             
             if interaction.response.is_done() is False:
                 if self.ctx.author.voice is None:
@@ -191,45 +243,155 @@ class Buttons_Music_Interaction(discord.ui.View):
                     return await interaction.response.edit_message(view=self)
     
 
-        @discord.ui.button (label = "Pause ⏯︎", style = discord.ButtonStyle.blurple, custom_id = "disc2")
-        async def pauseplayInteraction(self, interaction: discord.Interaction, button: discord.ui.Button):    
+        @discord.ui.button (label = "Pause ⏯︎", style = discord.ButtonStyle.blurple)
+        async def pauseplayInteraction(self, interaction: discord.Interaction, button: discord.ui.Button): #Pause Play Function  
 
             if self.ctx.author.voice is None:
                 await interaction.response.send_message("you are not in a VC, you cannot use this function",  delete_after = 2,  ephemeral = True)
     
-            elif self.ctx.author.voice != None:
-                vc = self.ctx.voice_client
+           # elif self.ctx.author.voice != None:
+            #    vc = self.ctx.voice_client
 
-            if ((interaction.response.is_done() == False) & (self.ctx.author.voice != None)):
+            if ((interaction.response.is_done() == False) and (self.ctx.author.voice != None)):
                 if self.pauseCheck is False:
-                    vc.pause() 
+                    self.vc.pause() 
                     self.pauseCheck = True
                     button.label = "Play ⏯︎"
                     button.style = discord.ButtonStyle.red
                     await interaction.response.edit_message(view=self)
                 elif self.pauseCheck is True:
-                    vc.resume() 
+                    self.vc.resume() 
                     self.pauseCheck = False
                     button.label = "Pause ⏯︎"
                     button.style = discord.ButtonStyle.blurple
                     await interaction.response.edit_message(view=self)
 
-        @discord.ui.button (label = "Skip", style = discord.ButtonStyle.success, custom_id = "disc3")
-        async def skipInteraction(self, interaction: discord.Interaction, button: discord.ui.Button):    
-            
+        @discord.ui.button (label = "Skip", style = discord.ButtonStyle.success) 
+        async def skipInteraction(self, interaction: discord.Interaction, button: discord.ui.Button): #Skip Function
+     
             if self.ctx.author.voice is None:
                 await interaction.response.send_message("you are not in a VC, you cannot use this function",  delete_after = 2, ephemeral = True)
 
-            elif interaction.response.is_done() is False:
-                vc.stop()
+            elif interaction.response.is_done() is False :
+                self.vc.stop()
                 await interaction.response.send_message("Skipping!", delete_after = 2, ephemeral = True)
 
-        def pausePlayGetter(): #Getter function
+        def pausePlayGetter(self): #Getter function
             return self.pauseCheck;
+
+class Buttons_Embed_Interaction(discord.ui.View):
+    def __init__(self, ctx, musicList2DArray):
+        self.currentPageCount = 0
+        self.ctx = ctx
+        self.musicList2DArray = musicList2DArray
+
+
+        
+
+    super().__init__(timeout = None)
+
+    def setEmbedViewAndPageCount(self, embedView, pageCount):
+        self.embedView = embedView
+        self.totalPageCount = pageCount - 1
+        self.buttonRightStatus = None
+        self.buttonLeftStatus = None
+
+
+    @discord.ui.button (label = "←", style = discord.ButtonStyle.blurple)
+    async def LeftInteraction(self, interaction: discord.Interaction, button: discord.ui.Button):
+        self.currentPageCount = self.currentPageCount - 1  
+
+        for child in self.children:
+            if ((self.buttonRightStatus and self.buttonLeftStatus) != None):
+                break
+            if type(child) == discord.ui.Button and child.label == "→":
+                self.buttonRightStatus = child
+            if type(child) == discord.ui.Button and child.label == "←":
+                self.buttonLeftStatus = child
+
+        updateEmbed = discord.Embed(title= "Songs", description = "playlist", color = 0x00ff00)
+        for x in range (0, 10):
+            updateEmbed.add_field (name=  self.musicList2DArray[self.currentPageCount][x], value = "", inline = False)
+
+        if (self.currentPageCount) == 0:
+            self.buttonLeftStatus.disabled = True
+            await interaction.response.edit_message(view=self)
+        elif self.buttonRightStatus.disabled == True:
+            self.buttonRightStatus.disabled = False
+            await interaction.response.edit_message(view=self)
+        else:
+            await interaction.response.defer()
+
+        await self.embedView.edit (embed = updateEmbed)
+
+        print (self.currentPageCount)
+        print (self.totalPageCount)
+
+    @discord.ui.button (label = "→", style = discord.ButtonStyle.blurple)
+    async def RightInteraction(self, interaction: discord.Interaction, button: discord.ui.Button): 
+        self.currentPageCount = self.currentPageCount + 1
+
+        for child in self.children:
+            if ((self.buttonRightStatus and self.buttonLeftStatus) != None):
+                break
+            if type(child) == discord.ui.Button and child.label == "→":
+                self.buttonRightStatus = child
+            if type(child) == discord.ui.Button and child.label == "←":
+                self.buttonLeftStatus = child
+
+        updateEmbed = discord.Embed(title= "Songs", description = "playlist", color = 0x00ff00)
+        for x in range (0, 10):
+            updateEmbed.add_field (name=  self.musicList2DArray[self.currentPageCount][x], value = "", inline = False)
+
+
+        if (self.currentPageCount) >= (self.totalPageCount):
+            self.buttonRightStatus.disabled = True
+            await interaction.response.edit_message(view=self)
+        elif self.buttonLeftStatus.disabled == True:
+            self.buttonLeftStatus.disabled = False
+            await interaction.response.edit_message(view=self)
+        else:
+            await interaction.response.defer()
+           
+        await self.embedView.edit (embed = updateEmbed)
+
+        print (self.currentPageCount)
+        print (self.totalPageCount)
+
+"""
+
+
+
+#Classes -----
+
+
+
 
 #COMMANDS -----------
 bot.remove_command('help') #removes default help command 
 
+@bot.command ()
+async def testCommand (ctx):
+    
+    await ctx.channel.send ("the time is now " + discord.utils.format_dt(discord.utils.utcnow(), style = "D") + "There are " + str(fileCounter()) + " Days until reading week!!!")
+
+
+        
+
+
+        
+        
+
+
+
+@bot.command ()
+async def Wolfram (ctx):
+    ctx.message.content = ctx.message.content.replace("$Wolfram", "")
+    URL = GetWolfram(ctx.message.content)
+    if URL != -1:
+        await ctx.channel.send(URL) 
+    else:
+        await ctx.channel.send("No Results")
 
 @bot.command ()
 async def Help (ctx): 
@@ -286,39 +448,51 @@ async def PlayMusic(ctx):
     channel = ctx.author.voice.channel
     vc = await channel.connect()
 
+    #vc = ctx.author.voice.channel
+
     #lists local folder file names and places them in an array while a empty array is made using the same length, it is then appended with the directory location
-    music_arr = os.listdir("Y:/Coding/Live/Discord Bot/Songs/Asian/")
+    music_arr = os.listdir("Y:/Coding/Live/Discord Bot/Songs/French Frog Music/")
     appended_music_arr = [""] * len(music_arr)
     for x in range (0,len(music_arr)):
-        appended_music_arr[x] = "Y:/Coding/Live/Discord Bot/Songs/Asian/" + music_arr[x]
+        appended_music_arr[x] = "Y:/Coding/Live/Discord Bot/Songs/French Frog Music/" + music_arr[x]
+
+
+    #New Algorithm
+
+
+    pageCount = (int(math.ceil(len(music_arr)/10)))
+    cols = 10
+    musicList2DArray = [[""]*cols for j in range(pageCount)]
+    
+    externalCount = 0
+    for i in range (0, pageCount):
+        
+        for j in range (0,10):
+            musicList2DArray[i][j] = music_arr[externalCount]
+            externalCount = externalCount + 1
+            if externalCount >= len(music_arr):
+                break
+
+
 
     #creates an embed for a list of songs
     embedVar = discord.Embed(title= "Songs", description = "playlist", color = 0x00ff00)
-    for x in range (0, len(music_arr)):
-        embedVar.add_field (name=  f"{music_arr[x]:<15}{str(x+1):>30}", value = "", inline = False)
+    for x in range (0, 10):
+        embedVar.add_field (name=  musicList2DArray[0][x], value = "", inline = False)
 
     
-    class Buttons_Embed_Interaction(discord.ui.View):
-        def __init__(self, ctx):
-            super().__init__(timeout = None)
-        @discord.ui.button (label = "←", style = discord.ButtonStyle.blurple, custom_id = "disc4")
-        async def LeftInteraction(self, interaction: discord.Interaction, button: discord.ui.Button):  
-            print ("placeholder")
-
-        @discord.ui.button (label = "→", style = discord.ButtonStyle.blurple, custom_id = "disc5")
-        async def RightInteraction(self, interaction: discord.Interaction, button: discord.ui.Button):  
-            print ("placeholder")
-
-                    
-    buttonEmbedInteract = Buttons_Embed_Interaction(ctx)
-    buttonViewMusic = Buttons_Music_Interaction(ctx)
+    buttonViewMusic = music_module.Buttons_Music_Interaction(ctx)
+    buttonEmbedInteract = music_module.Buttons_Embed_Interaction(ctx, musicList2DArray)
 
     await ctx.channel.send(view = buttonEmbedInteract)
-    await ctx.channel.send(embed = embedVar)
+    embedView = await ctx.channel.send(embed = embedVar)
     await ctx.channel.send(view = buttonViewMusic)
+    
+    buttonEmbedInteract.setEmbedViewAndPageCount(embedView, pageCount)
     
 
     #plays through the songs
+
     for x in range (0,len(music_arr)): 
         
         vc.play(discord.FFmpegPCMAudio(executable="Y:/Utilities/ffmpeg-6.0-essentials_build/bin/ffmpeg.exe", source=appended_music_arr[x]))
@@ -327,7 +501,7 @@ async def PlayMusic(ctx):
         await asyncio.sleep(2.5) #Removes the Speed Up At Start of song
         vc.resume()
 
-        while vc.is_playing() or (buttonViewMusic.pausePlayGetter()) == True:
+        while (vc.is_playing()) or (buttonViewMusic.pausePlayGetter() == True):
             await asyncio.sleep(1)
 
 
@@ -402,7 +576,7 @@ async def Test(ctx):
 
 
 
-@bot.command()
+@bot.command() #in case something breaks
 async def CloseTooHTR(ctx):
     await ctx.channel.send("closing")
     exit()
@@ -431,9 +605,10 @@ async def on_ready():
 
 @bot.event
 
-async def on_command_error(ctx, error): #error handling
-    if isinstance(error, commands.CommandNotFound):  
-        await ctx.send("Command not found, try typing $Help for a list of commands")
+
+#async def on_command_error(ctx, error): #error handling
+#    if isinstance(error, commands.CommandNotFound):  
+#        await ctx.send("Command not found, try typing $Help for a list of commands")
 
 @bot.event
 async def on_message(message): #on messages
@@ -441,7 +616,7 @@ async def on_message(message): #on messages
     channelid = message.channel.id
     strmessage = message.content # copys message contents to the strmessage variable (of string type)
     
-    #EXPERIMENTAL BUILD (FOR TESTING, REMOVE ON LIVE VERSION)
+    #FOR TESTING
     #if (channelid != 1132913818318680094):
     #    return
 
