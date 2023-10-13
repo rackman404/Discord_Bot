@@ -21,6 +21,7 @@ import math
 
 #Personal Classes
 import music_module
+import wolfram_module
 
 #INITILIZATION -------------------------
 
@@ -93,6 +94,7 @@ def image_download_and_OCR_scanner (embeds):
     
     return scannedString
 
+"""
 def GetWolfram(Query):
     Query = Query.strip()
     Query = Query.replace("+", " plus ")
@@ -121,6 +123,7 @@ def GetWolfram(Query):
         return imageURL #sends image URL out
 
     #NEXT STEPS, GET ARRAY OF IMAGES
+"""
 
 def fileCounter():
     if (os.path.isfile("config/data.txt") == False):
@@ -221,18 +224,11 @@ async def testCommand (ctx):
     await ctx.channel.send ("the time is now " + discord.utils.format_dt(discord.utils.utcnow(), style = "D") + "There are " + str(fileCounter()) + " Days until reading week!!!")
 
 
-        
-
-
-        
-        
-
-
 
 @bot.command ()
 async def Wolfram (ctx):
     ctx.message.content = ctx.message.content.replace("$Wolfram", "")
-    URL = GetWolfram(ctx.message.content)
+    URL = wolfram_module.GetWolfram(ctx.message.content)
     if URL != -1:
         await ctx.channel.send(URL) 
     else:
@@ -343,7 +339,7 @@ async def PlayMusic(ctx):
         vc.play(discord.FFmpegPCMAudio(executable="Y:/Utilities/ffmpeg-6.0-essentials_build/bin/ffmpeg.exe", source=appended_music_arr[x]))
         
         vc.pause() 
-        await asyncio.sleep(2.5) #Removes the Speed Up At Start of song
+        await asyncio.sleep(2.5) #Removes the Speed Up At Start of song (Buffer)
         vc.resume()
 
         while (vc.is_playing()) or (buttonViewMusic.pausePlayGetter() == True):
