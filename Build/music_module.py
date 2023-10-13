@@ -2,22 +2,6 @@ import discord
 from discord.ext import commands, tasks
 import string
 
-#PYTESSERACT
-from PIL import Image
-import pytesseract
-import numpy as np
-#IMAGE DOWNLOAD FROM URL and FILE MANAGEMENT
-import requests
-import os
-import os.path
-#TIME TRACKING
-import datetime
-import time
-import asyncio
-#EXTERNAL API
-import wikipedia
-#OTHER
-import math
 
 class Buttons_Music_Interaction(discord.ui.View):
         
