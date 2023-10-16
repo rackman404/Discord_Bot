@@ -14,6 +14,13 @@ class Buttons_Music_Interaction(discord.ui.View):
 
             super().__init__(timeout = None)
 
+        def playNowSetter (self, playNow, musicNameArray):
+            self.playNow = playNow #View object
+            self.plauNow
+
+    
+            
+
         @discord.ui.button (label = "Disconnect", style = discord.ButtonStyle.red)
 
         #If button is pressed, disconnects the bot
@@ -64,12 +71,17 @@ class Buttons_Music_Interaction(discord.ui.View):
             if self.ctx.author.voice is None:
                 await interaction.response.send_message("you are not in a VC, you cannot use this function",  delete_after = 2, ephemeral = True)
 
+            #updateEmbed = discord.Embed(title= , color = 0x00ff00)
+            #await self.embedView.edit (embed = updateEmbed)
+
             elif interaction.response.is_done() is False :
                 self.vc.stop()
                 await interaction.response.send_message("Skipping!", delete_after = 2, ephemeral = True)
 
+
+
         def pausePlayGetter(self): #Getter function
-            return self.pauseCheck;
+            return self.pauseCheck
 
 class Buttons_Embed_Interaction(discord.ui.View):
     def __init__(self, ctx, musicList2DArray):
@@ -147,3 +159,18 @@ class Buttons_Embed_Interaction(discord.ui.View):
 
         print (self.currentPageCount)
         print (self.totalPageCount)
+
+    
+    
+
+    # ----------- DROPDOWN MENU ---------------
+
+
+    selectOptionsList = []
+    for x in range(3):
+        selectOptionsList.append(discord.SelectOption(label = str(x)))
+
+
+    @discord.ui.select (min_values= 1, max_values= 3, options= selectOptionsList, row =1)
+    async def dropDown(self, interaction: discord.Interaction, select: discord.ui.select): 
+        print ("hello")

@@ -94,36 +94,6 @@ def image_download_and_OCR_scanner (embeds):
     
     return scannedString
 
-"""
-def GetWolfram(Query):
-    Query = Query.strip()
-    Query = Query.replace("+", " plus ")
-    Query = Query.replace("-", " minus ")
-
-    simpleAppid = "K6UG4H-6YPEX7VYRQ"
-
-    xml = requests.get("http://api.wolframalpha.com/v2/query?appid=" + simpleAppid + "&input=" + r'"' + Query + r'"' "&podstate=Step-by-step solution")
-
-    print ("http://api.wolframalpha.com/v2/query?appid=" + simpleAppid + "&input=" + r'"' + Query + r'"' +"&podstate=Step-by-step solution") #debug
-
-    xmlStr = str(xml.content) #string conversion of xml 
-
-    xmlStr = xmlStr.replace("amp;", "") # replaces amp link
-
-
-    imageLocationStart = xmlStr.find("img src=", xmlStr.find("Possible intermediate steps")) # finds start 
-    imageLocationEnd = xmlStr.find("'" + r'\n' , imageLocationStart) # and end of image link
-
-    #print (str(imageLocationStart) + "\n" + str(imageLocationEnd))
-
-    if (imageLocationStart == -1 or imageLocationEnd == -1): #error code for when image doesnt exist
-        return -1
-    else:
-        imageURL = xmlStr[imageLocationStart+9:imageLocationEnd]
-        return imageURL #sends image URL out
-
-    #NEXT STEPS, GET ARRAY OF IMAGES
-"""
 
 def fileCounter():
     if (os.path.isfile("config/data.txt") == False):
@@ -178,41 +148,14 @@ embedVarHelp.add_field(name = "$Wolfram", value = "Returns a step by step soluti
 
 #TASKS ---------
 
-
 @tasks.loop(time=set_times)
 async def timer():
-
-    
-        
-
 
     channel = bot.get_channel(1056035329888493649)
     await channel.send("the time is now " + discord.utils.format_dt(discord.utils.utcnow(), style = "D") + " There are " + str(fileCounter()) + " Days until reading week!!!")
     
-    """
-    diick = await channel.send("✈️                                                                                     🏙️")
-    await asyncio.sleep(1)
-
-    for x in range(50):
-        await diick.edit(content = "✈️                                                                                    🏙️")
-        await asyncio.sleep(1)
-        await diick.edit(content = "✈️                                                        🏙️")
-        await asyncio.sleep(1)
-        await diick.edit(content = "✈️                            🏙️")
-        await asyncio.sleep(1)
-        await diick.edit(content = "✈️      🏙️")
-        await asyncio.sleep(1)
-        await diick.edit(content = "💥")
-        await asyncio.sleep(1)
-        await diick.edit(content = "😵😵😵😵😵😵")
-        await asyncio.sleep(2)
-
-    """
 
 #TASKS ---------
-
-
-
 
 
 #COMMANDS -----------
@@ -228,9 +171,21 @@ async def testCommand (ctx):
 @bot.command ()
 async def Wolfram (ctx):
     ctx.message.content = ctx.message.content.replace("$Wolfram", "")
-    URL = wolfram_module.GetWolfram(ctx.message.content)
-    if URL != -1:
-        await ctx.channel.send(URL) 
+    URL_List = wolfram_module.GetWolfram(ctx.message.content)
+    if URL_List != -1:
+         
+        buttonEmbedInteract = wolfram_module.Buttons_Wolfram_Interaction(ctx, URL_List)
+        await ctx.channel.send(view = buttonEmbedInteract)
+
+        embedVar = discord.Embed(title= "Results", description = "1 out of " + str(len(URL_List)) , color = 0x00ff00)
+        embedVar.set_image(url = URL_List[0])
+        embedView = await ctx.channel.send(embed = embedVar) 
+
+        buttonEmbedInteract.setEmbedView(embedView)
+
+        
+
+        
     else:
         await ctx.channel.send("No Results")
 
@@ -292,10 +247,10 @@ async def PlayMusic(ctx):
     #vc = ctx.author.voice.channel
 
     #lists local folder file names and places them in an array while a empty array is made using the same length, it is then appended with the directory location
-    music_arr = os.listdir("Y:/Coding/Live/Discord Bot/Songs/French Frog Music/")
+    music_arr = os.listdir("Y:/Coding/Live/Songs/Made in Abyss OST/")
     appended_music_arr = [""] * len(music_arr)
     for x in range (0,len(music_arr)):
-        appended_music_arr[x] = "Y:/Coding/Live/Discord Bot/Songs/French Frog Music/" + music_arr[x]
+        appended_music_arr[x] = "Y:/Coding/Live/Songs/Made in Abyss OST/" + music_arr[x]
 
 
     #New Algorithm
@@ -321,12 +276,15 @@ async def PlayMusic(ctx):
     for x in range (0, 10):
         embedVar.add_field (name=  musicList2DArray[0][x], value = "", inline = False)
 
+    playNow = discord.Embed(title = "Now Playing:", description= music_arr[0], color = 0x00ff00)
     
     buttonViewMusic = music_module.Buttons_Music_Interaction(ctx)
     buttonEmbedInteract = music_module.Buttons_Embed_Interaction(ctx, musicList2DArray)
-
+    
     await ctx.channel.send(view = buttonEmbedInteract)
     embedView = await ctx.channel.send(embed = embedVar)
+    embedView = await ctx.channel.send(embed = playNow)
+
     await ctx.channel.send(view = buttonViewMusic)
     
     buttonEmbedInteract.setEmbedViewAndPageCount(embedView, pageCount)
