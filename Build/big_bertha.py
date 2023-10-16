@@ -283,10 +283,11 @@ async def PlayMusic(ctx):
     
     await ctx.channel.send(view = buttonEmbedInteract)
     embedView = await ctx.channel.send(embed = embedVar)
-    embedView = await ctx.channel.send(embed = playNow)
+    embedView2 = await ctx.channel.send(embed = playNow)
 
     await ctx.channel.send(view = buttonViewMusic)
     
+    buttonViewMusic.playNowSetter(embedView2, music_arr)
     buttonEmbedInteract.setEmbedViewAndPageCount(embedView, pageCount)
     
 

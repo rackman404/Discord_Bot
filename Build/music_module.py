@@ -6,8 +6,9 @@ import string
 class Buttons_Music_Interaction(discord.ui.View):
         
         def __init__(self, ctx):
-            self.ctx = ctx #instance variable
+            self.ctx = ctx
             self.pauseCheck = False
+            self.currentSong = 0
 
             if self.ctx.voice_client != None:
                 self.vc = self.ctx.voice_client
@@ -15,11 +16,15 @@ class Buttons_Music_Interaction(discord.ui.View):
             super().__init__(timeout = None)
 
         def playNowSetter (self, playNow, musicNameArray):
-            self.playNow = playNow #View object
-            self.plauNow
+            self.playNow = playNow #embed object for play now embed
+            self.musicNameArray = musicNameArray
 
-    
-            
+        def playNowIncrement (self):
+            self.currentSong += 1
+            updateEmbed = discord.Embed(title = "Now Playing:", description= self.musicNameArray[self.currentSong], color = 0x00ff00)
+
+            return updateEmbed
+        
 
         @discord.ui.button (label = "Disconnect", style = discord.ButtonStyle.red)
 
@@ -76,7 +81,12 @@ class Buttons_Music_Interaction(discord.ui.View):
 
             elif interaction.response.is_done() is False :
                 self.vc.stop()
-                await interaction.response.send_message("Skipping!", delete_after = 2, ephemeral = True)
+
+                updatedEmbed = self.playNowIncrement()
+                await self.playNow.edit (embed = updatedEmbed)
+
+
+                await interaction.response.edit_message()
 
 
 
@@ -99,7 +109,7 @@ class Buttons_Embed_Interaction(discord.ui.View):
         self.buttonLeftStatus = None
 
 
-    @discord.ui.button (label = "←", style = discord.ButtonStyle.blurple)
+    @discord.ui.button (label = "←", style = discord.ButtonStyle.blurple, disabled = True)
     async def LeftInteraction(self, interaction: discord.Interaction, button: discord.ui.Button):
         self.currentPageCount = self.currentPageCount - 1  
 
@@ -170,6 +180,10 @@ class Buttons_Embed_Interaction(discord.ui.View):
     for x in range(3):
         selectOptionsList.append(discord.SelectOption(label = str(x)))
 
+
+    #@discord.ui.TextInput(label = "Change Song: type name of current position in list", style = discord.ButtonStyle.blurple, required = True, row = 1)
+    #async def dropDown(self, interaction: discord.Interaction, select: discord.ui.TextInput): 
+    #    print ("hello")
 
     @discord.ui.select (min_values= 1, max_values= 3, options= selectOptionsList, row =1)
     async def dropDown(self, interaction: discord.Interaction, select: discord.ui.select): 
