@@ -247,10 +247,10 @@ async def PlayMusic(ctx):
     #vc = ctx.author.voice.channel
 
     #lists local folder file names and places them in an array while a empty array is made using the same length, it is then appended with the directory location
-    music_arr = os.listdir("Y:/Coding/Live/Songs/Made in Abyss OST/")
+    music_arr = os.listdir("C:/Users/jacky/Music/Made in Abyss OST/")
     appended_music_arr = [""] * len(music_arr)
     for x in range (0,len(music_arr)):
-        appended_music_arr[x] = "Y:/Coding/Live/Songs/Made in Abyss OST/" + music_arr[x]
+        appended_music_arr[x] = "C:/Users/jacky/Music/Made in Abyss OST/" + music_arr[x]
 
 
     #New Algorithm
@@ -295,7 +295,7 @@ async def PlayMusic(ctx):
 
     for x in range (0,len(music_arr)): 
         
-        vc.play(discord.FFmpegPCMAudio(executable="Y:/Utilities/ffmpeg-6.0-essentials_build/bin/ffmpeg.exe", source=appended_music_arr[x]))
+        vc.play(discord.FFmpegPCMAudio(executable="Build/config/ffmpeg.exe", source=appended_music_arr[x]))
         
         vc.pause() 
         await asyncio.sleep(2.5) #Removes the Speed Up At Start of song (Buffer)
