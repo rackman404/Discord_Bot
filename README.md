@@ -7,13 +7,16 @@
 * Music Player (With GUI)
   
 **Required packages (Dependancies):**
+
 OCR
 * Pillow
 * PyTesseract
 * NumPy
+  
 Main
 * Discord.py
-Misc 
+  
+Misc
 * datetime
 * time
 * wikipedia
