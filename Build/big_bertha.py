@@ -10,6 +10,7 @@ import numpy as np
 import requests
 import os
 import os.path
+
 #TIME TRACKING
 import datetime
 import time
@@ -19,13 +20,16 @@ import wikipedia
 #OTHER
 import math
 
-#Personal Classes
+#PERSONAL CLASSES
 import music_module
 import wolfram_module
 
 #INITILIZATION -------------------------
 
-token =  "MTEzMjA4MDUwNTY3MjY5OTk2NQ.GWYiiE.MuSF322Heb_6J4xw6gZf7f-xecqRN688U20gYI" #os.getenv("DISCORD_TOKEN")
+#load_dotenv()
+#print(os.environ)
+
+token =  os.environ['DISCORD_TOKEN']
 my_guild = "361552282287996928"    #os.getenv("DISCORD_GUILD")
 
 intents = discord.Intents.all()
@@ -36,8 +40,6 @@ set_times = [
     ##datetime.time(hour=7, tzinfo=utc), #NOTE THAT DATETIME.TIME IS AHEAD BY 4 HOURS (FORMAT IS HH:MM:SS)
     datetime.time(4, 0, 1), #midnight
 ]
-
-
 
 #INITILIZATION -------------------------
 
@@ -84,7 +86,7 @@ def image_download_and_OCR_scanner (embeds):
     with open('tempimage_ocr.png', 'wb') as handler: #creates a temp file for image
         handler.write(img_data) #writes image to file ???
 
-    pytesseract.pytesseract.tesseract_cmd = r'C:\\Program Files\\Tesseract-OCR\\tesseract.exe'
+    pytesseract.pytesseract.tesseract_cmd = r'Y:\\Utilities\\Tesseract-OCR\\tesseract.exe'
 
     filename = 'tempimage_ocr.png' #defines filename as temp file above
     img1 = np.array(Image.open(filename)) #???
@@ -152,7 +154,7 @@ embedVarHelp.add_field(name = "$Wolfram", value = "Returns a step by step soluti
 async def timer():
 
     channel = bot.get_channel(1056035329888493649)
-    await channel.send("the time is now " + discord.utils.format_dt(discord.utils.utcnow(), style = "D") + " There are " + str(fileCounter()) + " Days until reading week!!!")
+    await channel.send(".")
     
 
 #TASKS ---------
@@ -163,9 +165,7 @@ bot.remove_command('help') #removes default help command
 
 @bot.command ()
 async def testCommand (ctx):
-    
     await ctx.channel.send ("the time is now " + discord.utils.format_dt(discord.utils.utcnow(), style = "D") + "There are " + str(fileCounter()) + " Days until reading week!!!")
-
 
 
 @bot.command ()
@@ -183,8 +183,7 @@ async def Wolfram (ctx):
 
         buttonEmbedInteract.setEmbedView(embedView)
 
-        
-
+    
         
     else:
         await ctx.channel.send("No Results")
@@ -247,15 +246,12 @@ async def PlayMusic(ctx):
     #vc = ctx.author.voice.channel
 
     #lists local folder file names and places them in an array while a empty array is made using the same length, it is then appended with the directory location
-    music_arr = os.listdir("C:/Users/jacky/Music/Made in Abyss OST/")
+    music_arr = os.listdir("C:/Users/jacky/Music/Temp/")
     appended_music_arr = [""] * len(music_arr)
     for x in range (0,len(music_arr)):
-        appended_music_arr[x] = "C:/Users/jacky/Music/Made in Abyss OST/" + music_arr[x]
-
+        appended_music_arr[x] = "C:/Users/jacky/Music/Temp/" + music_arr[x]
 
     #New Algorithm
-
-
     pageCount = (int(math.ceil(len(music_arr)/10)))
     cols = 10
     musicList2DArray = [[""]*cols for j in range(pageCount)]
@@ -268,8 +264,6 @@ async def PlayMusic(ctx):
             externalCount = externalCount + 1
             if externalCount >= len(music_arr):
                 break
-
-
 
     #creates an embed for a list of songs
     embedVar = discord.Embed(title= "Songs", description = "playlist", color = 0x00ff00)
@@ -295,7 +289,7 @@ async def PlayMusic(ctx):
 
     for x in range (0,len(music_arr)): 
         
-        vc.play(discord.FFmpegPCMAudio(executable="Build/config/ffmpeg.exe", source=appended_music_arr[x]))
+        vc.play(discord.FFmpegPCMAudio(executable="config/ffmpeg.exe", source=appended_music_arr[x]))
         
         vc.pause() 
         await asyncio.sleep(2.5) #Removes the Speed Up At Start of song (Buffer)
@@ -303,6 +297,9 @@ async def PlayMusic(ctx):
 
         while (vc.is_playing()) or (buttonViewMusic.pausePlayGetter() == True):
             await asyncio.sleep(1)
+
+        updatedEmbed = buttonViewMusic.playNowIncrement()
+        await buttonViewMusic.playNow.edit (embed = updatedEmbed)
 
 
     vc.stop()
@@ -428,6 +425,7 @@ async def on_message(message): #on messages
 
     #elif ((nhentai_code_check(strmessage) == True) and channelid == 1083235734481276968):
         #await message.channel.send("https://www.nhentai.net/g/" + strmessage)
+        
     elif (message.author.id == 536340598375055361) and (search_found_Nword(strmessage) == 1): #If praneith says the n word
         await message.channel.send("of course praneith is being racist again. bro really did just say '" + strmessage + "' This is why you will never get a higher GPA than Soham and why your dad is in Italy.")
         await message.pin()
@@ -439,9 +437,9 @@ async def on_message(message): #on messages
         await author.kick(reason = "said the forbidden n word")
     elif (search_found_phrases(strmessage) == 2):
         #await message.reply("no you kys" , delete_after = 1)
-        await message.reply(embed = embedVarSuicide)
-    #elif (search_found_phrases(strmessage) == 3):
-        #await message.channel.send("bruh")
+        #await message.reply(embed = embedVarSuicide)
+        return
+
 
     # STRING CHECK --
     # EMBEDDED IMAGE CHECK ---
