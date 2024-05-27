@@ -19,21 +19,27 @@ import asyncio
 import wikipedia
 #OTHER
 import math
+#DATABASES
+import mysql.connector
+
 
 #PERSONAL CLASSES
 import music_module
 import wolfram_module
+import sql_module
 
 #INITILIZATION -------------------------
 
 #load_dotenv()
 #print(os.environ)
 
+
+
 token =  os.environ['DISCORD_TOKEN']
 my_guild = "361552282287996928"    #os.getenv("DISCORD_GUILD")
 
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix ="$", intents=intents, activity=discord.CustomActivity(name='Teaching Linear Algebra and Calculus 1'))
+bot = commands.Bot(command_prefix ="$", intents=intents, activity=discord.CustomActivity(name='Taking a fat shit'))
 
 
 set_times = [
@@ -41,9 +47,57 @@ set_times = [
     datetime.time(4, 0, 1), #midnight
 ]
 
+
+#Database Init
+currentSqlSession = sql_module.sqlSession
+currentSqlSession.dbInit()
+
+"""
+discordDB = mysql.connector.connect(host="127.0.0.1", user="root", password="admin")
+SQLCursor = discordDB.cursor()
+print(discordDB)
+
+SQLCursor.execute("SHOW DATABASES")
+
+print ("Current SQL databases:")
+for x in SQLCursor:
+    print(x)
+
+try:
+    discordDB = mysql.connector.connect(host="127.0.0.1", user="root", password="admin", database= "discord_db")
+    print ("DB link established")
+except mysql.connector.Error as err:
+    SQLCursor.execute("CREATE DATABASE discord_db")
+    discordDB = mysql.connector.connect(host="127.0.0.1", user="root", password="admin", database= "discord_db")
+    print("Discord database not found, created new database, link established")
+
+SQLCursor = discordDB.cursor()
+#init default tables
+SQLCursor.execute("SHOW TABLES")
+results = SQLCursor.fetchall()
+for x in results:
+    print (x)
+
+
+
+if ('words',) in results:
+    print ("words tables initialized")
+else:
+    SQLCursor.execute("CREATE TABLE words (word VARCHAR(255), userid VARCHAR(255), count int)")
+    print ("created words tables")
+
+if ('users',) in results:
+    print ("users tables initialized")
+else:
+    SQLCursor.execute("CREATE TABLE users (name VARCHAR(255), userid VARCHAR(255))")
+    print ("created users tables")
+"""
+
 #INITILIZATION -------------------------
 
 #FUNCTIONS -------------------------
+
+
 
 def search_found_Nword(sent_message):
     sent_message = sent_message.lower()
@@ -350,7 +404,7 @@ async def TimeNow(ctx):
 
 @bot.command()
 async def Test(ctx):
-    channel = bot.get_channel(361552282287996930)
+    channel = bot.get_channel(1056035329888493649)
 
     c = await channel.send("✈️                            🏙️")
     await asyncio.sleep(1)
@@ -419,8 +473,7 @@ async def on_message(message): #on messages
 
     if (message.author.bot):
         return  
-
-
+    
     # STRING CHECK ---
 
     #elif ((nhentai_code_check(strmessage) == True) and channelid == 1083235734481276968):
