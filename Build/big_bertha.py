@@ -49,49 +49,9 @@ set_times = [
 
 
 #Database Init
-currentSqlSession = sql_module.sqlSession
+currentSqlSession = sql_module.sqlSession()
 currentSqlSession.dbInit()
 
-"""
-discordDB = mysql.connector.connect(host="127.0.0.1", user="root", password="admin")
-SQLCursor = discordDB.cursor()
-print(discordDB)
-
-SQLCursor.execute("SHOW DATABASES")
-
-print ("Current SQL databases:")
-for x in SQLCursor:
-    print(x)
-
-try:
-    discordDB = mysql.connector.connect(host="127.0.0.1", user="root", password="admin", database= "discord_db")
-    print ("DB link established")
-except mysql.connector.Error as err:
-    SQLCursor.execute("CREATE DATABASE discord_db")
-    discordDB = mysql.connector.connect(host="127.0.0.1", user="root", password="admin", database= "discord_db")
-    print("Discord database not found, created new database, link established")
-
-SQLCursor = discordDB.cursor()
-#init default tables
-SQLCursor.execute("SHOW TABLES")
-results = SQLCursor.fetchall()
-for x in results:
-    print (x)
-
-
-
-if ('words',) in results:
-    print ("words tables initialized")
-else:
-    SQLCursor.execute("CREATE TABLE words (word VARCHAR(255), userid VARCHAR(255), count int)")
-    print ("created words tables")
-
-if ('users',) in results:
-    print ("users tables initialized")
-else:
-    SQLCursor.execute("CREATE TABLE users (name VARCHAR(255), userid VARCHAR(255))")
-    print ("created users tables")
-"""
 
 #INITILIZATION -------------------------
 
@@ -172,11 +132,6 @@ def fileCounter():
 
     return count
     
-
-
-
-
-
 #FUNCTIONS -------------------------
 
 
@@ -493,6 +448,8 @@ async def on_message(message): #on messages
         #await message.reply(embed = embedVarSuicide)
         return
 
+    currentSqlSession.insertUser(message)
+    currentSqlSession.insertWordUsage(message)
 
     # STRING CHECK --
     # EMBEDDED IMAGE CHECK ---
@@ -518,12 +475,5 @@ async def on_message(message): #on messages
 
 bot.run(token)
 
-
-
-
-    #TODO
-    #make a counter for who and how much times a person has been kicked for n word (read and write from text file?)
-    #Comic book reader
-    #Unity, Stack objects game
     #Setup YT DL as a discord command maybe?
 
