@@ -172,6 +172,15 @@ async def timer():
 #COMMANDS -----------
 bot.remove_command('help') #removes default help command 
 
+@bot.command()
+async def getwordusagesql(ctx):
+    dataList = currentSqlSession.getWordUsage()
+    mstring = "Count:  Word: \n"
+    for index, x in enumerate(dataList):
+        mstring += str(dataList[index][1]) + "               " + dataList[index][0] + "\n"
+    print (mstring)
+    await ctx.channel.send ("top 20 words used in server: \n" + mstring)
+
 @bot.command ()
 async def testCommand (ctx):
     await ctx.channel.send ("the time is now " + discord.utils.format_dt(discord.utils.utcnow(), style = "D") + "There are " + str(fileCounter()) + " Days until reading week!!!")
